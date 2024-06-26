@@ -49,5 +49,11 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request,response);
     }
-
+    /* Với cơ chế xác thực Authentication với JWT
+    Đầu tiên nhận vào request có kèm theo token từ client gửi lên từ đó -> ta sử lí lấy được token
+    -> Ta sẽ sử dụng lớp JWTTokenProvider(lớp này có ý nghĩa là tạo token và có thể từ token ta có thể lấy được các Payload với
+    các claims mà ta xét) sau khi lấy được username từ lớp JWTTokenProvider ta sẽ kiểm tra và load UserDetails lên
+    Sau đó ta sẽ kiểm tra xem token còn hợp lệ hay không nếu hợp lệ thì ta xét UserDetails vào lớp UsernamePasswordAuthenticationToken
+    lớp này cho phép ta xác thực bằng Username, và password. Và ta lưu thông tin xác thực vào SecurityContextHolder
+    */
 }

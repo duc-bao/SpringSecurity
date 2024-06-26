@@ -41,6 +41,23 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return  http.build();
+        /* - với phương thức crsf.disable thì là ngăn chặn các request được gửi đến và yêu cầu dùng để xác thực. Khi 1 request được gửi đến
+        thì cần phải kiểm tra
+        * - http.authorizeHttpRequests thì ủy quyền requests
+        - .requestsMatchers.permitAll() cho phép tất cả request với endpoint trên mà ko cần xác thực
+        - .anyRequest().authenticated() với các request khác thì ta sẽ bắt xác thực.
+        - http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) thì ta sẽ không cần lưu trạng
+           thái để đảm bảo rằng với mỗi request đến thì ta cần phải xác thực
+        - http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) thì ta sẽ thực thi bộ lọc xác thực
+         JWT trước và sau đó set và update với 2 tham số đầu tiên là bộ lọc JWT, tham số thứ 2 là xác thực bộ lọc authen với username
+         và password
+         - DaoAuthentication thì chúng ta sẽ sử dụng Interface UserDetailService và PasswordEncoder để xác thực username và password từ
+          request gửi lên
+           Quy trình từ: Filter rồi sang UsernamePasswordTOken -> AuthenticationManager để thực hiện ProviderMangager (có trình xác thực
+           mặc định là DaoAuthentication) và DaoAuthentication chúng ta sử dụng UserDetail để xác thực khi thành công thì tiếp tục
+           và lưu securityCOntext.
+        */
+
     }
     @Bean
     public PasswordEncoder passwordEncoder(){
