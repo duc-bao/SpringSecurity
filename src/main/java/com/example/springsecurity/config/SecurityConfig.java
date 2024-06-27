@@ -42,7 +42,7 @@ public class SecurityConfig {
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return  http.build();
         /* - với phương thức crsf.disable thì là ngăn chặn các request được gửi đến và yêu cầu dùng để xác thực. Khi 1 request được gửi đến
-        thì cần phải kiểm tra
+        thì cần phải kiểm tra là khi chúng ta call API coppy token vào 1 browser khác thì  chúng ngăn chặn khi ko cần chứng thực
         * - http.authorizeHttpRequests thì ủy quyền requests
         - .requestsMatchers.permitAll() cho phép tất cả request với endpoint trên mà ko cần xác thực
         - .anyRequest().authenticated() với các request khác thì ta sẽ bắt xác thực.

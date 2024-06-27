@@ -24,31 +24,31 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private CustomUsernameDetailService customUsernameDetailService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
+        String token = getTokenFromRequest(request);
         // lấy token người dùng truyền vào và lấy username dựa trên token đó
-        if(authHeader!= null && authHeader.startsWith("Bearer ")){
-            token = authHeader.substring(7);
-            // System.out.println("Token: " + token);
-            username = jwtTokenProvider.extractUsername(token);
-            //System.out.println("Username: " + username);
-        }
-        // ==> Từ chuỗi token lấy được chúng ta thêm người dùng vào cái request đó
-        // Kiểm tra xem user có tồn tại và đã đăng nhập hay chưa
-        if(username != null && SecurityContextHolder.getContext().getAuthentication()== null){
+        if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)){
+            // get username from token
+            String username = jwtTokenProvider.extractUsername(token);
+            // Load the user associated with token
             UserDetails userDetails = customUsernameDetailService.loadUserByUsername(username);
-            System.out.println("UserDetails: " + userDetails);
-            // Kiểm tra tính hợp lệ của token
-            if(jwtTokenProvider.validateToken(token, userDetails)){
-                // Tạo user với cái quyền của nó
-                UsernamePasswordAuthenticationToken auToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auToken);
-            }
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+            );
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         filterChain.doFilter(request,response);
     }
+    private String getTokenFromRequest(HttpServletRequest request){
+        String bearerToken = request.getHeader("Authorization");
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
+            return bearerToken.substring(7, bearerToken.length());
+        }
+        return null;
+    }
+
     /* Với cơ chế xác thực Authentication với JWT
     Đầu tiên nhận vào request có kèm theo token từ client gửi lên từ đó -> ta sử lí lấy được token
     -> Ta sẽ sử dụng lớp JWTTokenProvider(lớp này có ý nghĩa là tạo token và có thể từ token ta có thể lấy được các Payload với

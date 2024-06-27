@@ -5,6 +5,7 @@ import com.example.springsecurity.entity.Role;
 import com.example.springsecurity.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -78,9 +79,9 @@ public class JWTTokenProvider {
     public boolean isTokenExpiration(String token){
         return extractExpiration(token).before(new Date());
     }
-    public Boolean validateToken(String token, UserDetails userDetails){
-        final String  username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpiration(token));
+    public  boolean validateToken(String token){
+            Jwts.parser().setSigningKey(getSignKey()).build().parse(token);
+            return true;
     }
 
 
