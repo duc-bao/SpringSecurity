@@ -1,4 +1,4 @@
-package com.example.springsecurity.security;
+package com.example.springsecurity.config.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import javax.naming.AuthenticationException;
 import java.io.IOException;
 @Component
 public class JWTAuthException implements AuthenticationEntryPoint {

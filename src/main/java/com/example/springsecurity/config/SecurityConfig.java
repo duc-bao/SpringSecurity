@@ -1,7 +1,8 @@
 package com.example.springsecurity.config;
 
-import com.example.springsecurity.security.JWTAuthenticationFilter;
-import com.example.springsecurity.util.CustomUsernameDetailService;
+import com.example.springsecurity.config.security.ConfigAuthenticationFilter;
+import com.example.springsecurity.config.security.JWTAuthenticationFilter;
+import com.example.springsecurity.util.CustomUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,11 +15,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,22 +24,30 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
     @Autowired
-    private CustomUsernameDetailService customUsernameDetailService;
+    private CustomUserDetailService customUserDetailService;
+    @Autowired
+    private AuthenticationConfiguration authenticationConfiguration;
     @Autowired
     private JWTAuthenticationFilter jwtAuthenticationFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authurize) -> authurize
                         .requestMatchers(HttpMethod.GET, "/api/hello").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/register").permitAll()
                         .requestMatchers("/api/admin").hasAuthority("ROLE_ADMIN")
-                        .anyRequest().authenticated()).httpBasic(Customizer.withDefaults())
+                        .anyRequest().authenticated())
+                //.httpBasic(Customizer.withDefaults()) HTTP Basic Authentication
                 .csrf(AbstractHttpConfigurer::disable);
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(configAuthenticationFilter(authenticationManager(authenticationConfiguration)),UsernamePasswordAuthenticationFilter.class);
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return  http.build();
-        /* - với phương thức crsf.disable thì là ngăn chặn các request được gửi đến và yêu cầu dùng để xác thực. Khi 1 request được gửi đến
+        /* ConfigAuthenticationFilter sẽ được gọi mỗi khi có một request đến endpoint /login để thực hiện quá trình đăng nhập
+        -Với phương thức httpBasic(Customuzer.withDefaults) khi đó thì chúng ta sẽ dùng xác thực cơ bản của HTTP Basic Authentication
+        để xác thực dựa trên username và password đã được mã hóa gửi lên cùng với request, khi tắt httpBasic(Customizer.withDefaults())
+        thì nó sẽ ko được xác thực thông qua username, password
+        với phương thức crsf.disable thì là ngăn chặn các request được gửi đến và yêu cầu dùng để xác thực. Khi 1 request được gửi đến
         thì cần phải kiểm tra là khi chúng ta call API coppy token vào 1 browser khác thì  chúng ngăn chặn khi ko cần chứng thực
         * - http.authorizeHttpRequests thì ủy quyền requests
         - .requestsMatchers.permitAll() cho phép tất cả request với endpoint trên mà ko cần xác thực
@@ -60,13 +66,17 @@ public class SecurityConfig {
 
     }
     @Bean
+    public ConfigAuthenticationFilter configAuthenticationFilter(AuthenticationManager authenticationManager) {
+        return new ConfigAuthenticationFilter(authenticationManager);
+    }
+    @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider(CustomUsernameDetailService customUsernameDetailService){
+    public DaoAuthenticationProvider daoAuthenticationProvider(CustomUserDetailService customUserDetailService){
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(customUsernameDetailService);
+        daoAuthenticationProvider.setUserDetailsService(customUserDetailService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return  daoAuthenticationProvider;
     }

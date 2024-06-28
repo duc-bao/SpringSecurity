@@ -1,7 +1,6 @@
 package com.example.springsecurity.util;
 
-import com.example.springsecurity.dao.RoleRepository;
-import com.example.springsecurity.dao.UserRepository;
+import com.example.springsecurity.repository.UserRepository;
 import com.example.springsecurity.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,10 +13,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class CustomUsernameDetailService implements UserDetailsService {
+public class CustomUserDetailService implements UserDetailsService {
     private UserRepository userRepository;
 
-    public CustomUsernameDetailService(UserRepository userRepository) {
+    public CustomUserDetailService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
