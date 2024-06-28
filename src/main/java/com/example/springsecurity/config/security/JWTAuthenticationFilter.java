@@ -1,11 +1,15 @@
 package com.example.springsecurity.config.security;
 
-import com.example.springsecurity.entity.Role;
-import com.example.springsecurity.util.CustomUserDetailService;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,33 +23,34 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.example.springsecurity.entity.Role;
+import com.example.springsecurity.util.CustomUserDetailService;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JWTTokenProvider jwtTokenProvider;
+
     @Autowired
     private CustomUserDetailService customUserDetailService;
 
     Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         try {
             String token = getTokenFromRequest(request);
             // lấy token người dùng truyền vào và lấy username dựa trên token đó
-            if(StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)){
+            if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 // get username from token
                 String username = jwtTokenProvider.extractUsername(token);
-                if(username !=null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     // Load the user associated with token
                     List<Role> roles = jwtTokenProvider.extractRole(token);
-                    List<GrantedAuthority> authorities = roles.stream().map(
-                            role -> new SimpleGrantedAuthority(role.getName())
-                    ).collect(Collectors.toList());
+                    List<GrantedAuthority> authorities = roles.stream()
+                            .map(role -> new SimpleGrantedAuthority(role.getName()))
+                            .collect(Collectors.toList());
                     UserDetails userDetails = new UserDetails() {
                         @Override
                         public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -62,11 +67,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                             return username;
                         }
                     };
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     // BỔ sung thông tin xác thực liên quan đến request chi tiết như IP ...
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -74,14 +76,15 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("Cannot set user authentication");
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
-    private String getTokenFromRequest(HttpServletRequest request){
+
+    private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7, bearerToken.length());
         }
         return null;
