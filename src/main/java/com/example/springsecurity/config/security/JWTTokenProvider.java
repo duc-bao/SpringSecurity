@@ -33,7 +33,7 @@ public class JWTTokenProvider {
         String username = authentication.getName();
         User user = userRepository.findByUsername(username);
         Map<String, Object> claims = new HashMap<>();
-        Set<Role> roleList = user.getRoles();
+        List<Role> roleList = user.getRoles();
         //        if(user != null && user.getRoles().size() > 0){
         //            for (Role r : roleList){
         //                if (r.getName().equals("ADMIN")){

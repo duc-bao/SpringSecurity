@@ -1,9 +1,18 @@
 package com.example.springsecurity.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.example.springsecurity.exception.APIResponse;
+import com.example.springsecurity.exception.AppException;
+import com.example.springsecurity.exception.ErrorCode;
+import com.example.springsecurity.mapper.UserMapper;
+import com.example.springsecurity.payload.response.UserResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +25,7 @@ import com.example.springsecurity.repository.RoleRepository;
 import com.example.springsecurity.repository.UserRepository;
 
 @Service
+
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
@@ -25,48 +35,45 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private UserMapper userMapper;
     @Override
-    public ResponseEntity<?> register(SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Username is already exists"));
-        }
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Username is already exists"));
-        }
+    @Transactional
+    public UserResponse register(SignupRequest signupRequest) {
+            User user = userMapper.toUser(signupRequest);
+            user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
 
-        User user = new User()
-                .builder()
-                .username(signupRequest.getUsername())
-                .email(signupRequest.getEmail())
-                .password(passwordEncoder.encode(signupRequest.getPassword()))
-                .build();
+            List<String> roleSet = signupRequest.getRoles();
+            List<Role> roles = new ArrayList<>();
+            if (roleSet == null) {
+                Role role = roleRepository
+                        .findByName("ROLE_USER")
+                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                roles.add(role);
+            } else {
+                roleSet.forEach(role -> {
+                    switch (role) {
+                        case "ROLE_ADMIN":
+                            Role adminrole = roleRepository
+                                    .findByName("ROLE_ADMIN")
+                                    .orElseThrow(() -> new RuntimeException("ROLE is not found."));
+                            roles.add(adminrole);
+                        default:
+                            Role userRole = roleRepository
+                                    .findByName("ROLE_USER")
+                                    .orElseThrow(() -> new RuntimeException("Role is not found"));
+                            roles.add(userRole);
+                    }
+                });
+            }
+            user.setRoles(roles);
+            try {
+                user = userRepository.save(user);
+            }catch (DataIntegrityViolationException e){
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
+            return userMapper.toUserResponse(user);
 
-        Set<String> roleSet = signupRequest.getRoles();
-        Set<Role> roles = new HashSet<>();
-        if (roleSet == null) {
-            Role role = roleRepository
-                    .findByName("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(role);
-        } else {
-            roleSet.forEach(role -> {
-                switch (role) {
-                    case "ROLE_ADMIN":
-                        Role adminrole = roleRepository
-                                .findByName("ROLE_ADMIN")
-                                .orElseThrow(() -> new RuntimeException("ROLE is not found."));
-                        roles.add(adminrole);
-                    default:
-                        Role userRole = roleRepository
-                                .findByName("ROLE_USER")
-                                .orElseThrow(() -> new RuntimeException("Role is not found"));
-                        roles.add(userRole);
-                }
-            });
-        }
-        user.setRoles(roles);
-        userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("User resgiter success"));
+
     }
 }

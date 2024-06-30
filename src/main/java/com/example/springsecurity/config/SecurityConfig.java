@@ -1,5 +1,8 @@
 package com.example.springsecurity.config;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,15 +25,12 @@ import com.example.springsecurity.util.CustomUserDetailService;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SecurityConfig {
-    @Autowired
-    private CustomUserDetailService customUserDetailService;
-
-    @Autowired
-    private AuthenticationConfiguration authenticationConfiguration;
-
-    @Autowired
-    private JWTAuthenticationFilter jwtAuthenticationFilter;
+    CustomUserDetailService customUserDetailService;
+    AuthenticationConfiguration authenticationConfiguration;
+    JWTAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,11 +45,11 @@ public class SecurityConfig {
                         .authenticated())
                 // .httpBasic(Customizer.withDefaults()) HTTP Basic Authentication
                 .csrf(AbstractHttpConfigurer::disable); // Tắt cái tấn công endpoint trước tấn công csrf
-
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(
                 configAuthenticationFilter(authenticationManager(authenticationConfiguration)),
                 UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
         /* ConfigAuthenticationFilter sẽ được gọi mỗi khi có một request đến endpoint /login để thực hiện quá trình đăng nhập
@@ -76,7 +76,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ConfigAuthenticationFilter configAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public ConfigAuthenticationFilter configAuthenticationFilter(AuthenticationManager authenticationManager){
         return new ConfigAuthenticationFilter(authenticationManager);
     }
 

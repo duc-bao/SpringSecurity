@@ -1,7 +1,11 @@
 package com.example.springsecurity.controller;
 
+import com.example.springsecurity.entity.User;
+import com.example.springsecurity.exception.APIResponse;
+import com.example.springsecurity.payload.response.UserResponse;
 import jakarta.validation.Valid;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,7 @@ import com.example.springsecurity.service.UserService;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class AuthuController {
 
     @Autowired
@@ -23,7 +28,7 @@ public class AuthuController {
     @Autowired
     private JWTTokenProvider jwtTokenProvider;
 
-    Logger logger = LoggerFactory.getLogger(AuthuController.class);
+//    Logger logger = LoggerFactory.getLogger(AuthuController.class);
     //    @PostMapping("/login")
     //    public String loginPage(@RequestBody LoginDTO loginDTO){
     //        Authentication authentication = authenticationManager.authenticate(new
@@ -35,14 +40,8 @@ public class AuthuController {
     //        return  "Loi";
     //    }
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody SignupRequest signupRequest) {
-        try {
-            logger.info("Register success");
-            return userService.register(signupRequest);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
+    public APIResponse<UserResponse> register(@Valid @RequestBody SignupRequest signupRequest) {
+       return APIResponse.<UserResponse>builder().result(userService.register(signupRequest)).build();
     }
 
     @GetMapping("/hello")

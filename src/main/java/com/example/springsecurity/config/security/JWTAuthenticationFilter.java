@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.springsecurity.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,27 +49,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     // Load the user associated with token
                     List<Role> roles = jwtTokenProvider.extractRole(token);
-                    List<GrantedAuthority> authorities = roles.stream()
-                            .map(role -> new SimpleGrantedAuthority(role.getName()))
-                            .collect(Collectors.toList());
-                    UserDetails userDetails = new UserDetails() {
-                        @Override
-                        public Collection<? extends GrantedAuthority> getAuthorities() {
-                            return authorities;
-                        }
-
-                        @Override
-                        public String getPassword() {
-                            return null;
-                        }
-
-                        @Override
-                        public String getUsername() {
-                            return username;
-                        }
-                    };
+//                    List<GrantedAuthority> authorities = roles.stream()
+//                            .map(role -> new SimpleGrantedAuthority(role.getName()))
+//                            .collect(Collectors.toList());
+                    User user = new User();
+                    user.setRoles(roles);
+                    user.setUsername(username);
                     UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                     // BỔ sung thông tin xác thực liên quan đến request chi tiết như IP ...
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
