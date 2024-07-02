@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.example.springsecurity.entity.User;
+import com.example.springsecurity.repository.InvalidTokenRepository;
+import com.example.springsecurity.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,7 +36,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailService customUserDetailService;
-
+    @Autowired
+    private InvalidTokenRepository invalidTokenRepository;
     Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
     @Override
@@ -42,6 +45,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String token = getTokenFromRequest(request);
+            if(!invalidTokenRepository.existsById(jwtTokenProvider.extractIdToken(token))){
             // lấy token người dùng truyền vào và lấy username dựa trên token đó
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 // get username from token
@@ -62,6 +66,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     logger.info("User authentication");
                 }
+            }
             }
 
         } catch (Exception e) {

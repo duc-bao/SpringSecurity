@@ -39,12 +39,14 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/register")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                         .requestMatchers("/api/admin")
                         .hasAuthority("ROLE_ADMIN")
                         .anyRequest()
                         .authenticated())
                 // .httpBasic(Customizer.withDefaults()) HTTP Basic Authentication
-                .csrf(AbstractHttpConfigurer::disable); // Tắt cái tấn công endpoint trước tấn công csrf
+                .csrf(AbstractHttpConfigurer::disable);// Tắt cái tấn công endpoint trước tấn công csrf
+
         http.addFilterBefore(
                 configAuthenticationFilter(authenticationManager(authenticationConfiguration)),
                 UsernamePasswordAuthenticationFilter.class);

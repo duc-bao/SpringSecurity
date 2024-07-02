@@ -31,7 +31,7 @@ public class JWTTokenProvider {
 
     public String genreToken(Authentication authentication) {
         String username = authentication.getName();
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         Map<String, Object> claims = new HashMap<>();
         List<Role> roleList = user.getRoles();
         //        if(user != null && user.getRoles().size() > 0){
@@ -50,6 +50,7 @@ public class JWTTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         claims.put("roles", roles);
+        claims.put("jti", UUID.randomUUID().toString());
         return createToken(claims, username);
     }
 
@@ -83,7 +84,9 @@ public class JWTTokenProvider {
         final Claims claims = extractAllClaims(token);
         return claimsTFunction.apply(claims);
     }
-
+    public String extractIdToken(String token){
+        return extractClaims(token, claims -> claims.get("jti", String.class));
+    }
     public List<Role> extractRole(String token) {
         List<String> roles = extractClaims(token, claims -> claims.get("roles", List.class));
         return roles.stream()

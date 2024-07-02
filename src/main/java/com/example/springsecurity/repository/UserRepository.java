@@ -5,9 +5,11 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import com.example.springsecurity.entity.User;
 
+import java.util.Optional;
+
 @RepositoryRestResource(path = "users")
 public interface UserRepository extends JpaRepository<User, Integer> {
-    public User findByUsername(String username);
+    public Optional<User> findByUsername(String username);
 
     public User findByEmail(String email);
 

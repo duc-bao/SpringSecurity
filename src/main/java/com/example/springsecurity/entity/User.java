@@ -34,6 +34,7 @@ public class User implements UserDetails {
     private boolean enable;
     private boolean accountlock;
     private LocalDate dob;
+    @Transient
     @Version
     private Long version;
     @ManyToMany(
