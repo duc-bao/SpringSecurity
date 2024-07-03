@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "roles")
 public class Role implements GrantedAuthority {
     @Id
@@ -21,9 +22,9 @@ public class Role implements GrantedAuthority {
 
     private String name;
 
-    public Role(String name) {
-        this.name = name;
-    }
+//    public Role(String name) {
+//        this.name = name;
+//    }
 
     @ManyToMany(
             cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},

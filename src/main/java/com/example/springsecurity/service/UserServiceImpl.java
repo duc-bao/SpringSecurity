@@ -82,44 +82,8 @@ public class UserServiceImpl implements UserService {
             return userMapper.toUserResponse(user);
     }
 
-    @Override
-    public void logout(InvalidTokenRequest invalidTokenRequest) {
-        try {
-            if(jwtTokenProvider.validateToken(invalidTokenRequest.getToken())){
-                String jti = jwtTokenProvider.extractIdToken(invalidTokenRequest.getToken());
-                Date dateExpire = jwtTokenProvider.extractExpiration(invalidTokenRequest.getToken());
-                InvaliedToken invaliedToken = InvaliedToken.builder().id(jti).dateExpried(dateExpire).build();
-                invalidTokenRepository.save(invaliedToken);
-            }
-            ;log.info("authuzition");
-        }catch (AppException e){
-            log.info("Token already exists");
-        }
-    }
 
-    @Override
-    public AuthenticationResponse refreshToken(InvalidTokenRequest invalidTokenRequest) {
-            if (invalidAndSave(invalidTokenRequest.getToken())) {
-                String username = jwtTokenProvider.extractUsername(invalidTokenRequest.getToken());
-                User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
-                Authentication authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
-                String token = jwtTokenProvider.genreToken(authentication);
-               return AuthenticationResponse.builder().token(token).build();
-            }
-            return  AuthenticationResponse.builder().token(null).build();
-    }
-    private boolean invalidAndSave(String token){
-        try {
-            if(jwtTokenProvider.validateToken(token)){
-                String jti = jwtTokenProvider.extractIdToken(token);
-                Date dateExpire = jwtTokenProvider.extractExpiration(token);
-                InvaliedToken invaliedToken = InvaliedToken.builder().id(jti).dateExpried(dateExpire).build();
-                invalidTokenRepository.save(invaliedToken);
-                return  true;
-            }
-        }catch (AppException e){
-            log.info("Token invalid");
-        }
-        return  false;
-    }
+
+
+
 }

@@ -22,6 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.springsecurity.config.security.ConfigAuthenticationFilter;
 import com.example.springsecurity.config.security.JWTAuthenticationFilter;
 import com.example.springsecurity.util.CustomUserDetailService;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableMethodSecurity
@@ -31,22 +34,31 @@ public class SecurityConfig {
     CustomUserDetailService customUserDetailService;
     AuthenticationConfiguration authenticationConfiguration;
     JWTAuthenticationFilter jwtAuthenticationFilter;
-
+    String [] Public_ENDPOINT = {
+            "/api/hello", "/api/register","/api/outbound/authentication"
+    };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authurize) -> authurize
-                        .requestMatchers(HttpMethod.GET, "/api/hello")
+                        .requestMatchers(HttpMethod.GET, Public_ENDPOINT)
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/register")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, Public_ENDPOINT).permitAll()
                         .requestMatchers("/api/admin")
                         .hasAuthority("ROLE_ADMIN")
                         .anyRequest()
                         .authenticated())
                 // .httpBasic(Customizer.withDefaults()) HTTP Basic Authentication
                 .csrf(AbstractHttpConfigurer::disable);// Tắt cái tấn công endpoint trước tấn công csrf
-
+        // Cấu hình cors
+        http.cors(cors -> {
+            cors.configurationSource(request -> {
+                CorsConfiguration corsConfig = new CorsConfiguration();
+                corsConfig.addAllowedOrigin("http://localhost:3000");
+                corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+                corsConfig.addAllowedHeader("*");
+                return corsConfig;
+            });
+        });
         http.addFilterBefore(
                 configAuthenticationFilter(authenticationManager(authenticationConfiguration)),
                 UsernamePasswordAuthenticationFilter.class);

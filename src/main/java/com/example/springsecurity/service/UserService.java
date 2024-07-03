@@ -11,6 +11,4 @@ import com.example.springsecurity.payload.request.SignupRequest;
 
 public interface UserService {
     UserResponse register(SignupRequest signupRequest);
-    void logout(InvalidTokenRequest invalidTokenRequest);
-    AuthenticationResponse refreshToken(InvalidTokenRequest invalidTokenRequest);
 }

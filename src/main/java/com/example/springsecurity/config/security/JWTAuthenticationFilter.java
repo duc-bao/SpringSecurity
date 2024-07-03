@@ -45,7 +45,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String token = getTokenFromRequest(request);
-            if(!invalidTokenRepository.existsById(jwtTokenProvider.extractIdToken(token))){
+            //if(!invalidTokenRepository.existsById(jwtTokenProvider.extractIdToken(token))){
             // lấy token người dùng truyền vào và lấy username dựa trên token đó
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 // get username from token
@@ -66,7 +66,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     logger.info("User authentication");
                 }
-            }
             }
 
         } catch (Exception e) {

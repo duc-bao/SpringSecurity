@@ -5,8 +5,12 @@ import com.example.springsecurity.exception.APIResponse;
 import com.example.springsecurity.payload.request.InvalidTokenRequest;
 import com.example.springsecurity.payload.response.AuthenticationResponse;
 import com.example.springsecurity.payload.response.UserResponse;
+import com.example.springsecurity.service.AuthenticationService;
 import jakarta.validation.Valid;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +29,17 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 @Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthuController {
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JWTTokenProvider jwtTokenProvider;
-
+    UserService userService;
+    AuthenticationService authenticationService;
+    @PostMapping("/outbound/authentication")
+    public APIResponse<AuthenticationResponse> outboundAuthentication(@RequestParam(value = "code") String code){
+        log.info( "String code: {}",code);
+        var result = authenticationService.outboundAuthenticate(code);
+        return APIResponse.<AuthenticationResponse>builder().result(result).build();
+    }
 //    Logger logger = LoggerFactory.getLogger(AuthuController.class);
     //    @PostMapping("/login")
     //    public String loginPage(@RequestBody LoginDTO loginDTO){
@@ -50,12 +57,12 @@ public class AuthuController {
     }
     @PostMapping("/logout")
     public APIResponse<Void> logout(@RequestBody InvalidTokenRequest invalidTokenRequest){
-        userService.logout(invalidTokenRequest);
+        authenticationService.logout(invalidTokenRequest);
         return APIResponse.<Void>builder().build();
     }
     @PostMapping("/refresh")
     public APIResponse<AuthenticationResponse> refreshToken(@RequestBody InvalidTokenRequest invalidTokenRequest){
-        var result = userService.refreshToken(invalidTokenRequest);
+        var result = authenticationService.refreshToken(invalidTokenRequest);
         return APIResponse.<AuthenticationResponse>builder().result(result).build();
     }
     @GetMapping("/hello")
