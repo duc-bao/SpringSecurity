@@ -11,4 +11,5 @@ import com.example.springsecurity.payload.request.SignupRequest;
 
 public interface UserService {
     UserResponse register(SignupRequest signupRequest);
+    UserResponse getUserInfo();
 }

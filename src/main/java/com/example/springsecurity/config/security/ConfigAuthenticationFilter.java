@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +18,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.example.springsecurity.payload.request.LoginRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+@Slf4j
 public class ConfigAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     @Autowired
     private JWTTokenProvider jwtTokenProvider;
@@ -43,10 +44,10 @@ public class ConfigAuthenticationFilter extends AbstractAuthenticationProcessing
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
         String token = jwtTokenProvider.genreToken(authResult);
-        response.addHeader("Authorization", "Bearer " + token);
-        response.setContentType("text/plain");
+        log.trace("Token response {}", token);
+        response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(token);
+        response.getWriter().write("{\"jwt\": \"" + token + "\"}");
     }
 
     @Override

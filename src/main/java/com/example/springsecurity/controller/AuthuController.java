@@ -36,21 +36,11 @@ public class AuthuController {
     AuthenticationService authenticationService;
     @PostMapping("/outbound/authentication")
     public APIResponse<AuthenticationResponse> outboundAuthentication(@RequestParam(value = "code") String code){
-        log.info( "String code: {}",code);
+//        log.info( "String code: {}",code);
         var result = authenticationService.outboundAuthenticate(code);
         return APIResponse.<AuthenticationResponse>builder().result(result).build();
     }
-//    Logger logger = LoggerFactory.getLogger(AuthuController.class);
-    //    @PostMapping("/login")
-    //    public String loginPage(@RequestBody LoginDTO loginDTO){
-    //        Authentication authentication = authenticationManager.authenticate(new
-    // UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
-    //        if(authentication.isAuthenticated()){
-    //            final String jwt = jwtTokenProvider.genreToken(authentication);
-    //            return  jwt;
-    //        }
-    //        return  "Loi";
-    //    }
+
     @PostMapping("/register")
     public APIResponse<UserResponse> register(@Valid @RequestBody SignupRequest signupRequest) {
        return APIResponse.<UserResponse>builder().result(userService.register(signupRequest)).build();
@@ -65,15 +55,9 @@ public class AuthuController {
         var result = authenticationService.refreshToken(invalidTokenRequest);
         return APIResponse.<AuthenticationResponse>builder().result(result).build();
     }
-    @GetMapping("/hello")
-    public String hello() {
-        return "HelloWorld";
-    }
-
-    @GetMapping("/admin")
-    //    @PreAuthorize("hasAuthority('ADMIN')")
-    public String helloAdmin() {
-        return "ADMIN";
+    @GetMapping("/user/info")
+    public APIResponse<UserResponse> getUser(){
+        return APIResponse.<UserResponse>builder().result(userService.getUserInfo()).build();
     }
 
     @GetMapping("/user")
@@ -81,4 +65,15 @@ public class AuthuController {
     public String helloUser() {
         return "User";
     }
+    //    Logger logger = LoggerFactory.getLogger(AuthuController.class);
+    //    @PostMapping("/login")
+    //    public String loginPage(@RequestBody LoginDTO loginDTO){
+    //        Authentication authentication = authenticationManager.authenticate(new
+    // UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword()));
+    //        if(authentication.isAuthenticated()){
+    //            final String jwt = jwtTokenProvider.genreToken(authentication);
+    //            return  jwt;
+    //        }
+    //        return  "Loi";
+    //    }
 }

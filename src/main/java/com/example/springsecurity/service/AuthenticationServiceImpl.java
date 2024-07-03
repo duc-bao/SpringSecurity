@@ -74,8 +74,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .email(userInfo.getEmail())
                         .roles(List.of(userRole))
                         .build()));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        String token = jwtTokenProvider.genreToken(authentication);
 
-        return AuthenticationResponse.builder().token(response.getAccessToken()).build();
+        return AuthenticationResponse.builder().token(token).build();
     }
 
     @Override

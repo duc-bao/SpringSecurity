@@ -35,7 +35,7 @@ public class SecurityConfig {
     AuthenticationConfiguration authenticationConfiguration;
     JWTAuthenticationFilter jwtAuthenticationFilter;
     String [] Public_ENDPOINT = {
-            "/api/hello", "/api/register","/api/outbound/authentication"
+            "/api/hello", "/api/register","/api/outbound/authentication", "/api/user/info", "/login"
     };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
