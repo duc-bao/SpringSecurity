@@ -23,7 +23,7 @@
 ## JWTAuthenticationFilter
 ![img_3.png](img_3.png)
 
-#Spring Oauth2
+# Spring Oauth2
 ## Overview 
 - OAuth2 (Open Authorization 2.0) is a standard protocol used to provide secure authorization mechanisms for web and mobile applications.
 It allows applications to access user resources on other web services without needing to disclose the user's login credentials.

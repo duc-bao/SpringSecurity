@@ -6,6 +6,9 @@ import com.example.springsecurity.payload.request.InvalidTokenRequest;
 import com.example.springsecurity.payload.response.AuthenticationResponse;
 import com.example.springsecurity.payload.response.UserResponse;
 import com.example.springsecurity.service.AuthenticationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import lombok.AccessLevel;
@@ -30,6 +33,7 @@ import java.util.Map;
 @RequestMapping("/api")
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "Authentication")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthuController {
     UserService userService;
@@ -55,6 +59,14 @@ public class AuthuController {
         var result = authenticationService.refreshToken(invalidTokenRequest);
         return APIResponse.<AuthenticationResponse>builder().result(result).build();
     }
+    @Operation(
+            description = "Xem thông tin chi tiết của User",
+            summary = "Xem thông tin của User",
+            responses = {
+                    @ApiResponse(description = "Thành công", responseCode = "200")
+            }
+    )
+
     @GetMapping("/user/info")
     public APIResponse<UserResponse> getUser(){
         return APIResponse.<UserResponse>builder().result(userService.getUserInfo()).build();
