@@ -2,6 +2,8 @@ package com.example.springsecurity.config.security;
 
 import java.io.IOException;
 
+import com.example.springsecurity.exception.APIResponse;
+import com.example.springsecurity.payload.response.AuthenticationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +20,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.example.springsecurity.payload.request.LoginRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Slf4j
 public class ConfigAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     @Autowired
@@ -45,9 +48,15 @@ public class ConfigAuthenticationFilter extends AbstractAuthenticationProcessing
             throws IOException, ServletException {
         String token = jwtTokenProvider.genreToken(authResult);
         log.trace("Token response {}", token);
+        AuthenticationResponse authResponse = AuthenticationResponse.builder()
+                .token(token)
+                .build();
+        APIResponse<AuthenticationResponse> apiResponse = APIResponse.<AuthenticationResponse>builder()
+                .result(authResponse)
+                .build();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"jwt\": \"" + token + "\"}");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(apiResponse));
     }
 
     @Override

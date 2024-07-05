@@ -7,7 +7,7 @@ import com.example.springsecurity.entity.User;
 
 import java.util.Optional;
 
-//@RepositoryRestResource(path = "users")
+@RepositoryRestResource(path = "users")
 public interface UserRepository extends JpaRepository<User, Integer> {
     public Optional<User> findByUsername(String username);
 

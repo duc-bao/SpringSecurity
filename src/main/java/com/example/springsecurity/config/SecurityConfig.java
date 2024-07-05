@@ -1,5 +1,6 @@
 package com.example.springsecurity.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.springsecurity.config.security.ConfigAuthenticationFilter;
 import com.example.springsecurity.config.security.JWTAuthenticationFilter;
 import com.example.springsecurity.util.CustomUserDetailService;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -89,7 +92,14 @@ public class SecurityConfig {
         */
 
     }
-
+    @Bean
+    RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(new ObjectMapper());
+        restTemplate.getMessageConverters().add(converter);
+        return restTemplate;
+    }
     @Bean
     public ConfigAuthenticationFilter configAuthenticationFilter(AuthenticationManager authenticationManager){
         return new ConfigAuthenticationFilter(authenticationManager);
