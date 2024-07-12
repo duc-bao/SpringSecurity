@@ -34,6 +34,8 @@ public class User implements UserDetails {
     private boolean enable;
     private boolean accountlock;
     private LocalDate dob;
+    @Column(name = "version_token")
+    private int versionToken;
     @Transient
     @Version
     private Long version;

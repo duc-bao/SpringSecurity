@@ -53,27 +53,28 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
             List<String> roleSet = signupRequest.getRoles();
             List<Role> roles = new ArrayList<>();
-            if (roleSet == null) {
-                Role role = roleRepository
-                        .findByName("ROLE_USER")
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                roles.add(role);
-            } else {
-                roleSet.forEach(role -> {
-                    switch (role) {
-                        case "ROLE_ADMIN":
-                            Role adminrole = roleRepository
-                                    .findByName("ROLE_ADMIN")
-                                    .orElseThrow(() -> new RuntimeException("ROLE is not found."));
-                            roles.add(adminrole);
-                        default:
-                            Role userRole = roleRepository
-                                    .findByName("ROLE_USER")
-                                    .orElseThrow(() -> new RuntimeException("Role is not found"));
-                            roles.add(userRole);
-                    }
-                });
-            }
+//            if (roleSet == null) {
+//                Role role = roleRepository
+//                        .findByName("ROLE_USER")
+//                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//                roles.add(role);
+//            } else {
+//                roleSet.forEach(role -> {
+//                    switch (role) {
+//                        case "ROLE_ADMIN":
+//                            Role adminrole = roleRepository
+//                                    .findByName("ROLE_ADMIN")
+//                                    .orElseThrow(() -> new RuntimeException("ROLE is not found."));
+//                            roles.add(adminrole);
+//                        default:
+//                            Role userRole = roleRepository
+//                                    .findByName("ROLE_USER")
+//                                    .orElseThrow(() -> new RuntimeException("Role is not found"));
+//                            roles.add(userRole);
+//                    }
+//                });
+//            }
+            user.setVersionToken(1);
             user.setRoles(roles);
             try {
                 user = userRepository.save(user);
@@ -89,6 +90,5 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
         return  userMapper.toUserResponse(user);
     }
-
 
 }

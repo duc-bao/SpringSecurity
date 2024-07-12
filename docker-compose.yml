@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: securitytest
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3310:3306"
+    networks:
+      - springboot-mysql-network
+
+  app:
+    image: ducbao2904/springboot-docker
+    container_name: springboot-container
+    build: .
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_APPLICATION_NAME: springSecurity
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/securitytest
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: user_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: false
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: trace
+      SPRINGDOC_SWAGGER_UI_PATH: /swagger-ui.html
+      SPRINGDOC_API_DOCS_PATH: /api-docs
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: 50673866762-9n4is19c1l77bor711pckk9185gpjed2.apps.googleusercontent.com
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: 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
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI: http://localhost:3000/authenticate
+      JWT_SECRET: 20be3c2ff70a7aadda0d4e59874346de451d01cdec029190d58e04389daf5435
+      JWT_EXPIRATION_DATE: 604800016
+      JWT_REFRESH_TOKEN_EXPIRATION_DATE: 2592000000
+    depends_on:
+      - db
+    networks:
+      - springboot-mysql-network
+
+networks:
+  springboot-mysql-network:
+    driver: bridge

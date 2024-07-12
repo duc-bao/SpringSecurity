@@ -9,6 +9,8 @@ import com.example.springsecurity.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import lombok.AccessLevel;
@@ -27,6 +29,7 @@ import com.example.springsecurity.config.security.JWTTokenProvider;
 import com.example.springsecurity.payload.request.SignupRequest;
 import com.example.springsecurity.service.UserService;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -55,9 +58,8 @@ public class AuthuController {
         return APIResponse.<Void>builder().build();
     }
     @PostMapping("/refresh")
-    public APIResponse<AuthenticationResponse> refreshToken(@RequestBody InvalidTokenRequest invalidTokenRequest){
-        var result = authenticationService.refreshToken(invalidTokenRequest);
-        return APIResponse.<AuthenticationResponse>builder().result(result).build();
+    public void  refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+            authenticationService.refreshToken(request, response);
     }
     @Operation(
             description = "Xem thông tin chi tiết của User",
@@ -73,7 +75,7 @@ public class AuthuController {
     }
 
     @GetMapping("/user")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String helloUser() {
         return "User";
     }

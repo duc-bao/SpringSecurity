@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -24,9 +25,12 @@ import io.jsonwebtoken.security.Keys;
 public class JWTTokenProvider {
     @Autowired
     private UserRepository userRepository;
-
-    private String secret = "20be3c2ff70a7aadda0d4e59874346de451d01cdec029190d58e04389daf5435";
-    private long jwtExpirationDate = 604800016;
+    @Value("${jwt.secret}")
+    private String secret ;
+    @Value("${jwt.expirationDate}") // 15 phút
+    private long jwtExpirationDate ;
+    @Value("${jwt.refreshTokenExpirationDate}") // 30 ngày
+    private long refreshTokenExpirationDate ;
     Logger logger = LoggerFactory.getLogger(JWTTokenProvider.class);
 
     public String genreToken(Authentication authentication) {
@@ -34,26 +38,22 @@ public class JWTTokenProvider {
         User user = userRepository.findByUsername(username).get();
         Map<String, Object> claims = new HashMap<>();
         List<Role> roleList = user.getRoles();
-        //        if(user != null && user.getRoles().size() > 0){
-        //            for (Role r : roleList){
-        //                if (r.getName().equals("ADMIN")){
-        //                    claims.put("role", "ADMIN");
-        //                    break;
-        //                }
-        //                if(r.getName().equals("USER")){
-        //                    claims.put("role", "USER");
-        //                    break;
-        //                }
-        //            }
-        //        }
+
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         claims.put("roles", roles);
         claims.put("jti", UUID.randomUUID().toString());
+        claims.put("token_version", user.getVersionToken());
         return createToken(claims, username);
     }
-
+    public  String generRefreshToken(Authentication authentication){
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).get();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("jti", UUID.randomUUID().toString());
+        return  createToken(claims, username);
+    }
     // Tạo token
     private String createToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
@@ -123,7 +123,7 @@ public class JWTTokenProvider {
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
-
         return false;
     }
+
 }

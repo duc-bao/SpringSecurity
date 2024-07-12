@@ -47,9 +47,12 @@ public class ConfigAuthenticationFilter extends AbstractAuthenticationProcessing
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
         String token = jwtTokenProvider.genreToken(authResult);
+        String refrshToken = jwtTokenProvider.generRefreshToken(authResult);
         log.trace("Token response {}", token);
+        log.trace("Refresh token{}", refrshToken);
         AuthenticationResponse authResponse = AuthenticationResponse.builder()
                 .token(token)
+                .refreshToken(refrshToken)
                 .build();
         APIResponse<AuthenticationResponse> apiResponse = APIResponse.<AuthenticationResponse>builder()
                 .result(authResponse)
